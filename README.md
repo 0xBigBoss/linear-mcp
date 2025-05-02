@@ -1,10 +1,30 @@
 # Linear MCP Server
 
-An MCP server for interacting with Linear's API. This server provides a set of tools for managing Linear issues, projects, and teams through Cline.
+A Model Context Protocol (MCP) server for interacting with Linear's API. This server provides a set of tools for managing Linear issues, projects, and teams through AI assistants.
+
+## Overview
+
+The Linear MCP Server enables AI assistants to perform operations in Linear without needing direct API access. It serves as a bridge between AI tools and Linear's API, handling authentication, request formatting, and response parsing.
+
+## Features
+
+- **Authentication**: Secure API key and OAuth-based authentication
+- **Issue Management**: Create, update, delete, and search issues
+- **Project Management**: Create projects and associate issues
+- **Team Management**: Access team information, states, and workflows
+- **Batch Operations**: Support for bulk issue creation and deletion
 
 ## Setup Guide
 
-### 1. Environment Setup
+### Prerequisites
+
+- Node.js 18 or later
+- npm 7 or later
+- A Linear account with API access
+
+### Installation
+
+#### Option 1: Local Installation
 
 1. Clone the repository
 2. Install dependencies:
@@ -16,9 +36,26 @@ An MCP server for interacting with Linear's API. This server provides a set of t
    cp .env.example .env
    ```
 
-### 2. Authentication
+#### Option 2: Docker (Recommended)
 
-The server supports two authentication methods:
+1. Pull the latest image:
+   ```bash
+   docker pull ghcr.io/0xbigboss/linear-mcp:latest
+   ```
+
+2. Run with your Linear API key:
+   ```bash
+   docker run -e LINEAR_API_KEY=your_api_key ghcr.io/0xbigboss/linear-mcp
+   ```
+
+For OAuth authentication, mount a volume with your environment variables:
+```bash
+docker run -v /path/to/.env:/app/.env ghcr.io/0xbigboss/linear-mcp
+```
+
+### Authentication Configuration
+
+The client supports two authentication methods:
 
 #### API Key (Recommended)
 
@@ -26,7 +63,7 @@ The server supports two authentication methods:
 2. Navigate to the "Security & access" section
 3. Find the "Personal API keys" section
 4. Click "New API key"
-5. Give the key a descriptive label (e.g. "Cline MCP")
+5. Give the key a descriptive label (e.g. "MCP Server")
 6. Copy the generated token immediately
 7. Add the token to your `.env` file:
    ```
@@ -43,128 +80,82 @@ The server supports two authentication methods:
    LINEAR_REDIRECT_URI=http://localhost:3000/callback
    ```
 
-### 3. Running the Server
+### Building and Running
 
-1. Build the server:
+#### Using npm
+
+1. Build the client:
    ```bash
    npm run build
    ```
-2. Start the server:
+2. Start the client:
    ```bash
    npm start
    ```
 
-### 4. Cline Integration
+#### Using Docker
 
-1. Open your Cline MCP settings file:
-   - macOS: `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-   - Windows: `%APPDATA%/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-   - Linux: `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+Build the image locally:
+```bash
+docker build -t linear-mcp .
+```
 
-2. Add the Linear MCP server configuration:
-   ```json
-   {
-     "mcpServers": {
-       "linear": {
-         "command": "node",
-         "args": ["/path/to/linear-mcp/build/index.js"],
-         "env": {
-           "LINEAR_API_KEY": "your_personal_access_token"
-         },
-         "disabled": false,
-         "autoApprove": []
-       }
-     }
-   }
-   ```
+Run the container:
+```bash
+docker run -e LINEAR_API_KEY=your_api_key linear-mcp
+```
 
-## Available Actions
+## Diagnostics and Troubleshooting
 
-The server currently supports the following operations:
+### Verifying Installation
 
-### Issue Management
-- ✅ Create issues with full field support (title, description, team, project, etc.)
-- ✅ Update existing issues (priority, description, etc.)
-- ✅ Delete issues (single or bulk deletion)
-- ✅ Search issues with filtering
-- ✅ Associate issues with projects
-- ✅ Create parent/child issue relationships
+The MCP server should start without errors. Check console output for any startup issues.
 
-### Project Management
-- ✅ Create projects with associated issues
-- ✅ Get project information
-- ✅ Associate issues with projects
+### Testing Authentication
 
-### Team Management
-- ✅ Get team information (with states and workflow details)
-- ✅ Access team states and labels
+```bash
+# Test API key authentication
+npm run test:integration
 
-### Authentication
-- ✅ API Key authentication
-- ✅ Secure token storage
+# Test OAuth flow
+npm run test:oauth
+```
 
-### Batch Operations
-- ✅ Bulk issue creation
-- ✅ Bulk issue deletion
+### Common Issues
 
-### Bulk Updates (In Testing)
-- 🚧 Bulk issue updates (parallel processing implemented, needs testing)
-
-## Features in Development
-
-The following features are currently being worked on:
-
-### Issue Management
-- 🚧 Comment functionality (add/edit comments, threading)
-- 🚧 Complex search filters
-- 🚧 Pagination support for large result sets
-
-### Metadata Operations
-- 🚧 Label management (create/update/assign)
-- 🚧 Cycle/milestone management
-
-### Project Management
-- 🚧 Project template support
-- 🚧 Advanced project operations
-
-### Authentication
-- 🚧 OAuth flow with automatic token refresh
-
-### Performance & Security
-- 🚧 Rate limiting
-- 🚧 Detailed logging
-- 🚧 Load testing and optimization
+- **Authentication failures**: Verify your API key or OAuth credentials
+- **Connection errors**: Check network connectivity to Linear's API
+- **Permission errors**: Ensure your Linear account has appropriate permissions
 
 ## Development
 
 ```bash
-# Install dependencies
-npm install
+# Run in development mode with auto-reload
+npm run dev
 
 # Run tests
 npm test
 
-# Run integration tests (requires LINEAR_API_KEY)
+# Run integration tests
 npm run test:integration
 
-# Build the server
-npm run build
-
-# Start the server
-npm start
+# Run with test tokens
+npm run get-test-tokens
 ```
 
-## Integration Testing
+## Integration with AI Assistants
 
-Integration tests verify that authentication and API calls work correctly:
+This MCP server is designed to be integrated with AI assistants. See documentation for specific assistant setup:
 
-1. Set up authentication (API Key recommended for testing)
-2. Run integration tests:
-   ```bash
-   npm run test:integration
-   ```
+- [Cline Setup](./docs/cline-setup.md)
+- [Claude Setup](./docs/claude-setup.md)
 
-For OAuth testing:
-1. Configure OAuth credentials in `.env`
-2. Remove `.skip` from OAuth tests in `src/__tests__/auth.integration.test.ts`
-3. Run integration tests
+## Docker Image
+
+The official Docker image is available on GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/0xbigboss/linear-mcp:latest
+```
+
+This container image is automatically built and published via GitHub Actions. See the [Dockerfile](./Dockerfile) for details on the image configuration.
